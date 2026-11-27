@@ -1,0 +1,111 @@
+{
+  "collection": "golden",
+  "decoded": [
+    {
+      "location": "7Bxy",
+      "id": "tree-1",
+      "binary": true,
+      "weight": 3,
+      "metrics": [
+        43.5,
+        -1.25,
+        12
+      ],
+      "payloadHex": "00070e151c232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b424950575e656c737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b222930373e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a41484f565d646b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b525960676e757c838a91989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b323940474e555c636a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd040b121920272e353c434a51585f666d747b828990979ea5acb3bac1c8cfd6dde4ebf2f900070e151c232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d"
+    },
+    {
+      "location": "7Bxz",
+      "id": "bâtiment-é",
+      "binary": false,
+      "weight": 0,
+      "metrics": [
+        1
+      ],
+      "payloadHex": "7b22666f726d6174223a22696e64657875732d6275696c64696e672d7633222c226c6576656c73223a5b312c325d2c226e616d65223a22746f7572227d"
+    },
+    {
+      "location": "7C",
+      "id": "empty",
+      "binary": false,
+      "weight": 0,
+      "metrics": [],
+      "payloadHex": ""
+    },
+    {
+      "location": "_-",
+      "id": "bytes-0",
+      "binary": true,
+      "weight": 0,
+      "metrics": [],
+      "payloadHex": ""
+    },
+    {
+      "location": "a",
+      "id": "text",
+      "binary": false,
+      "weight": 0,
+      "metrics": [
+        0.1,
+        1e+300
+      ],
+      "payloadHex": "22706c61696e207465787422"
+    }
+  ],
+  "json": {
+    "records": [
+      {
+        "collection": "golden",
+        "location": "7Bxy",
+        "id": "tree-1",
+        "metrics": [
+          43.5,
+          -1.25,
+          12
+        ],
+        "payload": "AAcOFRwjKjE4P0ZNVFtiaXB3foWMk5qhqK+2vcTL0tng5+71/AMKERgfJi00O0JJUFdeZWxzeoGIj5adpKuyucDHztXc4+rx+P8GDRQbIikwNz5FTFNaYWhvdn2Ei5KZoKeutbzDytHY3+bt9PsCCRAXHiUsMzpBSE9WXWRrcnmAh46VnKOqsbi/xs3U2+Lp8Pf+BQwTGiEoLzY9REtSWWBnbnV8g4qRmJ+mrbS7wsnQ197l7PP6AQgPFh0kKzI5QEdOVVxjanF4f4aNlJuiqbC3vsXM09rh6O/2/QQLEhkgJy41PENKUVhfZm10e4KJkJeepayzusHIz9bd5Ovy+QAHDhUcIyoxOD9GTVRbYmlwd36FjJOaoaivtr3Ey9LZ4Ofu9fwDChEYHyYt",
+        "weight": 3,
+        "binary": true
+      },
+      {
+        "collection": "golden",
+        "location": "7Bxz",
+        "id": "bâtiment-é",
+        "metrics": [
+          1
+        ],
+        "payload": {
+          "format": "indexus-building-v3",
+          "levels": [
+            1,
+            2
+          ],
+          "name": "tour"
+        }
+      },
+      {
+        "collection": "golden",
+        "location": "7C",
+        "id": "empty",
+        "metrics": null
+      },
+      {
+        "collection": "golden",
+        "location": "_-",
+        "id": "bytes-0",
+        "metrics": null,
+        "payload": "",
+        "binary": true
+      },
+      {
+        "collection": "golden",
+        "location": "a",
+        "id": "text",
+        "metrics": [
+          0.1,
+          1e+300
+        ],
+        "payload": "plain text"
+      }
+    ]
+  }
+}

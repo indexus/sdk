@@ -1,0 +1,131 @@
+{
+ "sections": [
+  {
+   "parent": "",
+   "suffixChars": 1,
+   "keyWords": 1,
+   "metricCount": 2,
+   "revision": 0,
+   "metricBytes": 4,
+   "suffixes": [
+    "7",
+    "a"
+   ],
+   "keys": [
+    469762048,
+    2415919104
+   ],
+   "count": [
+    3,
+    1
+   ],
+   "metrics": [
+    [
+     0.0,
+     0.0
+    ],
+    [
+     10.0,
+     4.0
+    ]
+   ]
+  },
+  {
+   "parent": "",
+   "suffixChars": 2,
+   "keyWords": 1,
+   "metricCount": 2,
+   "revision": 0,
+   "metricBytes": 4,
+   "suffixes": [
+    "7a",
+    "_-"
+   ],
+   "keys": [
+    507510784,
+    4292870144
+   ],
+   "count": [
+    2,
+    5
+   ],
+   "metrics": [
+    [
+     7.0,
+     0.0
+    ],
+    [
+     1.0,
+     0.0
+    ]
+   ]
+  },
+  {
+   "parent": "7",
+   "suffixChars": 1,
+   "keyWords": 1,
+   "metricCount": 2,
+   "revision": 0,
+   "metricBytes": 4,
+   "suffixes": [
+    "B",
+    "C"
+   ],
+   "keys": [
+    738197504,
+    805306368
+   ],
+   "count": [
+    5,
+    2
+   ],
+   "metrics": [
+    [
+     0.0,
+     0.0
+    ],
+    [
+     2.0,
+     123456.7890625
+    ]
+   ]
+  },
+  {
+   "parent": "7",
+   "suffixChars": 4,
+   "keyWords": 1,
+   "metricCount": 2,
+   "revision": 0,
+   "metricBytes": 4,
+   "suffixes": [
+    "Bxyz"
+   ],
+   "keys": [
+    801062144
+   ],
+   "count": [
+    1
+   ],
+   "metrics": [
+    [
+     0.0
+    ],
+    [
+     3.0
+    ]
+   ]
+  }
+ ],
+ "redirects": [
+  {
+   "location": "a",
+   "name": "peerA",
+   "ip": "10.0.0.2",
+   "port": 21000
+  }
+ ],
+ "columns": [
+  2,
+  0
+ ]
+}

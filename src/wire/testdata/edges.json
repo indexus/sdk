@@ -1,0 +1,203 @@
+{
+ "sections": [
+  {
+   "parent": "7B",
+   "suffixChars": 0,
+   "keyWords": 0,
+   "metricCount": 2,
+   "revision": 0,
+   "metricBytes": 4,
+   "suffixes": [
+    ""
+   ],
+   "keys": [],
+   "count": [
+    3
+   ],
+   "metrics": [
+    [
+     3.0
+    ],
+    [
+     3.0
+    ]
+   ]
+  },
+  {
+   "parent": "7B",
+   "suffixChars": 6,
+   "keyWords": 2,
+   "metricCount": 5,
+   "revision": 0,
+   "metricBytes": 4,
+   "suffixes": [
+    "abcdef",
+    "zzzzz_"
+   ],
+   "keys": [
+    2455349154,
+    2415919104,
+    4158619127,
+    4026531840
+   ],
+   "count": [
+    1,
+    3
+   ],
+   "metrics": [
+    [
+     1.0,
+     0.5
+    ],
+    [
+     2.0,
+     0.0
+    ],
+    [
+     3.0,
+     0.0
+    ],
+    [
+     4.0,
+     0.0
+    ],
+    [
+     5.0,
+     0.0
+    ]
+   ]
+  },
+  {
+   "parent": "",
+   "suffixChars": 2,
+   "keyWords": 1,
+   "metricCount": 1,
+   "revision": 0,
+   "metricBytes": 4,
+   "suffixes": [
+    "7C",
+    "c9"
+   ],
+   "keys": [
+    482344960,
+    2559574016
+   ],
+   "count": [
+    1,
+    5
+   ],
+   "metrics": [
+    [
+     9.0,
+     8.0
+    ]
+   ]
+  },
+  {
+   "parent": "",
+   "suffixChars": 1,
+   "keyWords": 1,
+   "metricCount": 1,
+   "revision": 0,
+   "metricBytes": 4,
+   "suffixes": [
+    "_"
+   ],
+   "keys": [
+    4227858432
+   ],
+   "count": [
+    1
+   ],
+   "metrics": [
+    [
+     -1.5
+    ]
+   ]
+  },
+  {
+   "parent": "",
+   "suffixChars": 32,
+   "keyWords": 6,
+   "metricCount": 2,
+   "revision": 0,
+   "metricBytes": 4,
+   "suffixes": [
+    "0123456789ABCDEFGHIJKLMNOPQRSTUV"
+   ],
+   "keys": [
+    1082128,
+    1367810194,
+    2335232911,
+    1091867473,
+    1435984278,
+    2607929247
+   ],
+   "count": [
+    3
+   ],
+   "metrics": [
+    [
+     3.0
+    ],
+    [
+     1.0
+    ]
+   ]
+  },
+  {
+   "parent": "b",
+   "suffixChars": 1,
+   "keyWords": 1,
+   "metricCount": 2,
+   "revision": 0,
+   "metricBytes": 4,
+   "suffixes": [
+    "Q"
+   ],
+   "keys": [
+    1744830464
+   ],
+   "count": [
+    1
+   ],
+   "metrics": [
+    [
+     999999995904.0
+    ],
+    [
+     0.10000000149011612
+    ]
+   ]
+  },
+  {
+   "parent": "b",
+   "suffixChars": 2,
+   "keyWords": 1,
+   "metricCount": 3,
+   "revision": 0,
+   "metricBytes": 4,
+   "suffixes": [
+    "-_"
+   ],
+   "keys": [
+    4226809856
+   ],
+   "count": [
+    2
+   ],
+   "metrics": [
+    [
+     300000.0
+    ],
+    [
+     15000000.0
+    ],
+    [
+     16777216.0
+    ]
+   ]
+  }
+ ],
+ "redirects": []
+}

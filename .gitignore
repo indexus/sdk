@@ -1,0 +1,10 @@
+.vscode
+.DS_Store
+node_modules
+.local/
+*.log
+coverage/
+
+# generated: rollup bundles and GPU check pages
+dist/
+scripts/gpu-check/dist/

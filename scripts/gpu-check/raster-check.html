@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>RUNNING</title>
+</head>
+<body>
+<h1>Indexus field raster check</h1>
+<pre id="result">running…</pre>
+<script type="module">
+// Browser check of gpu/raster.js on a real device: instances in the pack
+// layout (a steady target, then a pair whose halves hold two hours) drawn
+// into the raster, read back (for this check only) and compared texel by
+// texel with the cells' means. Serve the package root over http and open
+// /scripts/gpu-check/raster-check.html; the title becomes PASS, FAIL or NO-WEBGPU.
+import { createFieldRaster, mercatorRect } from "../../src/gpu/raster.js";
+import { INSTANCE_FLOATS } from "../../src/gpu/pack.js";
+
+const out = document.getElementById("result");
+const finish = (title, result) => {
+  out.textContent = JSON.stringify(result, null, 1);
+  document.title = title;
+};
+
+const f16 = (h) => {
+  const s = h & 0x8000 ? -1 : 1, e = (h >> 10) & 31, m = h & 1023;
+  if (e === 0) return s * m * 2 ** -24;
+  if (e === 31) return m ? NaN : s * Infinity;
+  return s * (1 + m / 1024) * 2 ** (e - 15);
+};
+
+// Cells of resolution 6 (2.8125° x 5.625°) over France, means 1, 2, 3...
+const RES = 6;
+const LAT = 180 / 2 ** RES, LNG = 360 / 2 ** RES;
+const cells = [];
+for (let i = 0; i < 4; i++) for (let j = 0; j < 3; j++) {
+  cells.push({ lat: 39.375 + i * LAT + LAT / 2, lng: -5.625 + j * LNG + LNG / 2, mean: 1 + i * 3 + j });
+}
+const view = [-5.625, 39.375, -5.625 + 3 * LNG, 39.375 + 4 * LAT];
+
+/** A steady target ([12..13] = [8..9]) or a pair: current half then previous half. */
+function instances(pair) {
+  const n = cells.length;
+  const data = new Float32Array((pair ? 2 : 1) * n * INSTANCE_FLOATS);
+  cells.forEach((c, i) => {
+    const area = 7 + i;
+    const put = (at, cur, prev) => {
+      data.set([c.lat, c.lng, c.lat, c.lng, c.lat, c.lng, c.lat, c.lng, cur * area, cur ? area : 0, RES, RES,
+        prev * area, prev ? area : 0], at * INSTANCE_FLOATS);
+    };
+    if (!pair) put(i, c.mean, c.mean);
+    else {
+      put(i, c.mean, 0); // the hour, previous values 0
+      put(n + i, 0, 10 * c.mean); // the hour before, current values 0
+    }
+  });
+  return data;
+}
+
+async function run() {
+  if (!navigator.gpu) return finish("NO-WEBGPU", { reason: "no navigator.gpu" });
+  const adapter = await navigator.gpu.requestAdapter();
+  if (!adapter) return finish("NO-WEBGPU", { reason: "no adapter" });
+  const device = await adapter.requestDevice();
+  const raster = createFieldRaster(device, { size: 96 });
+  const rect = mercatorRect(view);
+  const results = [];
+  for (const pair of [false, true]) {
+    const data = instances(pair);
+    const buffer = device.createBuffer({ size: data.byteLength, usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST });
+    device.queue.writeBuffer(buffer, 0, data);
+    const packed = { count: data.length / INSTANCE_FLOATS, gpuBuffer: buffer, version: pair ? 2 : 1 };
+    const bytesPerRow = 96 * 8;
+    const read = device.createBuffer({ size: bytesPerRow * 96, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
+    const encoder = device.createCommandEncoder();
+    raster.encode(encoder, { packed, rect });
+    encoder.copyTextureToBuffer({ texture: raster.texture }, { buffer: read, bytesPerRow }, [96, 96]);
+    device.queue.submit([encoder.finish()]);
+    await read.mapAsync(GPUMapMode.READ);
+    const texels = new Uint16Array(read.getMappedRange().slice(0));
+    read.unmap();
+    // every texel centre: inside a cell → (mean, mean or 10·mean, 1, 1)
+    let checked = 0, worst = 0, uncovered = 0;
+    for (let y = 0; y < 96; y++) for (let x = 0; x < 96; x++) {
+      const mx = rect[0] + ((x + 0.5) / 96) * (rect[2] - rect[0]);
+      const my = rect[1] + ((y + 0.5) / 96) * (rect[3] - rect[1]);
+      const lng = mx * 360 - 180;
+      const lat = (Math.atan(Math.sinh(Math.PI * (1 - 2 * my))) * 180) / Math.PI;
+      const c = cells.find((k) => Math.abs(k.lat - lat) < LAT / 2 && Math.abs(k.lng - lng) < LNG / 2);
+      // skip texels on a cell edge: the rasterizer may give them to either side
+      const edge = c && (Math.abs(Math.abs(c.lat - lat) - LAT / 2) < 0.05 || Math.abs(Math.abs(c.lng - lng) - LNG / 2) < 0.08);
+      const t = [0, 1, 2, 3].map((k) => f16(texels[(y * 96 + x) * 4 + k]));
+      if (!c) { if (t[2] || t[3]) uncovered++; continue; }
+      if (edge) continue;
+      const want = [c.mean, pair ? 10 * c.mean : c.mean, 1, 1];
+      worst = Math.max(worst, ...want.map((v, k) => Math.abs(t[k] - v) / v));
+      checked++;
+    }
+    results.push({ pair, checked, worst, uncovered });
+    buffer.destroy();
+  }
+  const ok = results.every((r) => r.checked > 6000 && r.worst < 1e-3 && r.uncovered === 0);
+  finish(ok ? "PASS" : "FAIL", { adapter: adapter.info?.architecture ?? "", results });
+}
+run().catch((error) => finish("FAIL", { error: String(error?.stack ?? error) }));
+</script>
+</body>
+</html>

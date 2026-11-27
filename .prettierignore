@@ -1,0 +1,28 @@
+# Same file in sdk, dashboard and experiences.
+# Prettier formats code only: JS, JSX, MJS, CSS and config JSON.
+
+# Build output and dependencies
+dist/
+dist-*/
+coverage/
+node_modules/
+/public/
+*.min.*
+
+# Lock files and generated data
+package-lock.json
+pnpm-lock.yaml
+/data/
+.data*/
+perf/baseline/
+**/testdata/**/*.json
+**/fixtures/**/*.json
+*.snapshot.json
+*.geojson
+*.csv
+
+# Not formatted by prettier in this repository set
+*.md
+*.html
+*.yaml
+*.yml

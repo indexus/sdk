@@ -1,0 +1,56 @@
+{
+  "schema": "indexus-peer-wire-v1",
+  "limits": {
+    "readLocations": 1024,
+    "contentRecords": 10000,
+    "contentParts": 1024,
+    "contentBytes": 67108864,
+    "contentLocationLength": 16
+  },
+  "sets": {
+    "precision": 32,
+    "propertyCount": 4,
+    "metricScale": 1000000
+  },
+  "entry": {
+    "location": "a",
+    "count": 3,
+    "metrics": [
+      0,
+      0,
+      12,
+      2.5,
+      0
+    ]
+  },
+  "redirect": {
+    "location": "a",
+    "name": "peer-A",
+    "ip": "127.0.0.1",
+    "port": 21000
+  },
+  "bodyHex": "00000000010204160061c0c0989680",
+  "envelopeHex": "49585331000000010001610006706565722d4100093132372e302e302e31520800000000010204160061c0c0989680",
+  "peers": [
+    {
+      "name": "0000000000000000",
+      "idHex": "000000000000000000000000",
+      "routingKey": "AAAAAAAAAAAAAAAA"
+    },
+    {
+      "name": "00420mG51WS82GeB",
+      "idHex": "000102030405060708090a0b",
+      "routingKey": "AAECAwQFBgcICQoL"
+    },
+    {
+      "name": "AAAAAAAAAAAAAAAA",
+      "idHex": "28a28a28a28a28a28a28a28a",
+      "routingKey": "KKKKKKKKKKKKKKKK"
+    },
+    {
+      "name": "7v5vgiuL5hO15-zU",
+      "idHex": "1f9179aace1516b60117ef5e",
+      "routingKey": "H5F5qs4VFrYBF-9e"
+    }
+  ]
+}

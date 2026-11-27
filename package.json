@@ -1,0 +1,71 @@
+{
+  "name": "js-indexus-sdk",
+  "version": "2.0.0",
+  "description": "Indexus JavaScript client for the Distributed Prefix Index Protocol (DPIP): prefix addressing, zone summaries and WebGPU maps.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/indexus/sdk.git"
+  },
+  "homepage": "https://github.com/indexus/sdk#readme",
+  "bugs": {
+    "url": "https://github.com/indexus/sdk/issues"
+  },
+  "main": "dist/js-indexus-sdk.cjs",
+  "module": "dist/js-indexus-sdk.esm.js",
+  "browser": "dist/js-indexus-sdk.umd.js",
+  "files": [
+    "src/**/*.js",
+    "src/**/*.wasm",
+    "dist",
+    "README.md",
+    "LICENSE-NOTICES.md"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "prepare": "rollup -c",
+    "test": "node --test src/wire/*.test.mjs src/api/*.test.mjs src/network/*.test.mjs src/store/*.test.mjs src/walk/*.test.mjs src/walk/heat/*.test.mjs src/local/*.test.mjs src/utilities/*.test.mjs src/tree/*.test.mjs src/map/lib/*.test.mjs src/map/components/*.test.mjs src/map/heat/*.test.mjs src/map/visualization/*.test.mjs src/map/workers/heat/*.test.mjs src/gpu/*.test.mjs src/runtime/*.test.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^10.0.0",
+    "react": "^18.3.1",
+    "rollup": "^2.38.0"
+  },
+  "keywords": [
+    "indexus",
+    "p2p",
+    "spatial-index",
+    "aggregation",
+    "webgpu",
+    "maplibre"
+  ],
+  "author": "Rémi Henriot",
+  "license": "MPL-2.0",
+  "dependencies": {
+    "earcut": "^3.2.3"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./src/index.js",
+      "require": "./dist/js-indexus-sdk.cjs"
+    },
+    "./map": "./src/map/index.js",
+    "./react": "./src/react/index.js",
+    "./map/heat-worker": "./src/map/workers/heat.worker.js",
+    "./gpu": "./src/gpu/index.js",
+    "./store": "./src/store/index.js"
+  },
+  "sideEffects": [
+    "./src/map/workers/heat.worker.js"
+  ],
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  }
+}

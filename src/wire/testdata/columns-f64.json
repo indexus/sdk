@@ -1,0 +1,192 @@
+{
+ "sections": [
+  {
+   "parent": "",
+   "suffixChars": 1,
+   "keyWords": 1,
+   "metricCount": 1,
+   "revision": 0,
+   "metricBytes": 8,
+   "suffixes": [
+    "a"
+   ],
+   "keys": [
+    2415919104
+   ],
+   "count": [
+    1
+   ],
+   "metrics": [
+    [
+     0.0
+    ]
+   ]
+  },
+  {
+   "parent": "",
+   "suffixChars": 2,
+   "keyWords": 1,
+   "metricCount": 1,
+   "revision": 0,
+   "metricBytes": 8,
+   "suffixes": [
+    "bC"
+   ],
+   "keys": [
+    2495610880
+   ],
+   "count": [
+    2
+   ],
+   "metrics": [
+    [
+     -2.5e-300
+    ]
+   ]
+  },
+  {
+   "parent": "",
+   "suffixChars": 3,
+   "keyWords": 1,
+   "metricCount": 1,
+   "revision": 0,
+   "metricBytes": 8,
+   "suffixes": [
+    "dEf"
+   ],
+   "keys": [
+    2632597504
+   ],
+   "count": [
+    5
+   ],
+   "metrics": [
+    [
+     0.0
+    ]
+   ]
+  },
+  {
+   "parent": "X",
+   "suffixChars": 1,
+   "keyWords": 1,
+   "metricCount": 1,
+   "revision": 0,
+   "metricBytes": 8,
+   "suffixes": [
+    "1"
+   ],
+   "keys": [
+    67108864
+   ],
+   "count": [
+    3
+   ],
+   "metrics": [
+    [
+     0.0
+    ]
+   ]
+  },
+  {
+   "parent": "X",
+   "suffixChars": 2,
+   "keyWords": 1,
+   "metricCount": 1,
+   "revision": 0,
+   "metricBytes": 8,
+   "suffixes": [
+    "YZ"
+   ],
+   "keys": [
+    2318401536
+   ],
+   "count": [
+    1
+   ],
+   "metrics": [
+    [
+     1.0
+    ]
+   ]
+  },
+  {
+   "parent": "ab",
+   "suffixChars": 1,
+   "keyWords": 1,
+   "metricCount": 1,
+   "revision": 0,
+   "metricBytes": 8,
+   "suffixes": [
+    "c"
+   ],
+   "keys": [
+    2550136832
+   ],
+   "count": [
+    1
+   ],
+   "metrics": [
+    [
+     0.0
+    ]
+   ]
+  },
+  {
+   "parent": "ab",
+   "suffixChars": 6,
+   "keyWords": 2,
+   "metricCount": 1,
+   "revision": 0,
+   "metricBytes": 8,
+   "suffixes": [
+    "cdefgh"
+   ],
+   "keys": [
+    2591697322,
+    2952790016
+   ],
+   "count": [
+    2
+   ],
+   "metrics": [
+    [
+     0.5
+    ]
+   ]
+  },
+  {
+   "parent": "q_-9Z",
+   "suffixChars": 1,
+   "keyWords": 1,
+   "metricCount": 1,
+   "revision": 0,
+   "metricBytes": 8,
+   "suffixes": [
+    "0"
+   ],
+   "keys": [
+    0
+   ],
+   "count": [
+    4
+   ],
+   "metrics": [
+    [
+     0.0
+    ]
+   ]
+  }
+ ],
+ "redirects": [
+  {
+   "location": "X",
+   "name": "peerX",
+   "ip": "10.0.0.3",
+   "port": 21001
+  }
+ ],
+ "columns": [
+  1
+ ]
+}
