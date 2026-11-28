@@ -271,6 +271,8 @@ real GPU in the browser.
 - [docs/layers.md](docs/layers.md): the layer contract and its interfaces
 - [docs/heat-pipeline.md](docs/heat-pipeline.md): worker, store, arena, pack, draw
 - [docs/compose.md](docs/compose.md): joining collections on the GPU
+- [Check a cached view and reload selected subtrees](docs/observed-cut-refresh.md)
+- [Run filtered vector search and reproduce the SIFT sessions](docs/filtered-ann.md)
 - Wire format: [core/docs/protocol/wire-block.md](https://github.com/indexus/core/blob/main/docs/protocol/wire-block.md)
 
 Maintained by Rémi Henriot. The [project history](https://github.com/indexus/papers/tree/main/60-history-and-authorship) documents the contributions of AI tools.
