@@ -42,3 +42,21 @@ hits as applying the predicate during search. It reduces the rows assigned
 during construction and the rows visited during each query. The resulting
 index covers only that selection. For a single query, `exactKnn(eligible,
 query, {limit: 10})` can avoid the construction cost entirely.
+
+## Reproduce the local SIFT sessions
+
+From the SDK checkout, supply the extracted SIFT1M fvecs directory. Use
+100000 or 1000000 rows. Each run checks 64 top-10 queries against an
+independent exhaustive squared-L2 oracle on a fixed 1/16 selection. It
+also checks that a filtered global IVF and an IVF built on the selection
+return identical hits at 16 probes with the same centroids.
+
+```sh
+node scripts/perf/sift-session.mjs /path/to/sift 1000000 > sift-1m.json
+```
+
+The JSON includes input-prefix hashes, setup time, recall, candidate visits,
+and elapsed search time for 1, 4, 16 and 64 interactions. Add the setup
+cost for the strategy being compared. Loading observations over the network
+is a separate measurement. With 64 distinct queries, the reported p99
+is the sample maximum.
