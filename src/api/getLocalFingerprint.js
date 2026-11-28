@@ -1,15 +1,11 @@
 import { checkLocation, checkName } from "../tree/alphabet.js";
 import { mergeSubtreeFingerprints } from "../walk/subtreeFingerprint.js";
-import { peerUrl, requestPeer } from "./transport.js";
+import { requestLocalPeer } from "./transport.js";
 
 export async function getLocalFingerprint(protocol, peer, collection, location, options = {}) {
   checkName(collection);
   checkLocation(location);
-  const url = peerUrl(protocol, peer.ip(), peer.port(), "/zones/fingerprint/local", options.gateway);
-  const { status, data } = await requestPeer(url, options, {
-    params: { collection, location },
-    redirect: "error"
-  });
+  const { status, data } = await requestLocalPeer(protocol, peer, "/zones/fingerprint/local", { collection, location }, options);
   if (status !== 200 || data?.collection !== collection || data.location !== location || data.complete !== false)
     throw new Error("Invalid local fingerprint response");
   const { fingerprint, guard, monoid } = data;

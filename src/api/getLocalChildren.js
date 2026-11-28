@@ -1,5 +1,5 @@
 import { checkLocation, checkName, isDirectChild, LOCATION_ALPHABET } from "../tree/alphabet.js";
-import { peerUrl, requestPeer } from "./transport.js";
+import { requestLocalPeer } from "./transport.js";
 
 // A peer can only report the direct child addresses it currently knows locally.
 export async function getLocalChildren(protocol, peer, collection, location, options = {}) {
@@ -9,8 +9,7 @@ export async function getLocalChildren(protocol, peer, collection, location, opt
   if (typeof includeUncertain !== "boolean") throw new TypeError("Expected boolean includeUncertain");
   const params = { collection, location };
   if (includeUncertain) params.include_uncertain = "true";
-  const url = peerUrl(protocol, peer.ip(), peer.port(), "/zones/children/local", options.gateway);
-  const { status, data } = await requestPeer(url, options, { params, redirect: "error" });
+  const { status, data } = await requestLocalPeer(protocol, peer, "/zones/children/local", params, options);
   if (status !== 200 || (includeUncertain && data?.include_uncertain !== true) ||
       data?.complete !== false || !Array.isArray(data.children) ||
       data.children.length > LOCATION_ALPHABET.length) throw new Error("Invalid local children response");

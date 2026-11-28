@@ -11,6 +11,12 @@ export function peerUrl(protocol, ip, port, path, gateway) {
   return `${protocol}://${getHostFromIP(ip)}:${port}${suffix}`;
 }
 
+// These local reads must answer from the selected peer, even through a gateway.
+export function requestLocalPeer(protocol, peer, path, params, options) {
+  const url = peerUrl(protocol, peer.ip(), peer.port(), path, options.gateway);
+  return requestPeer(url, options, { params, redirect: "error" });
+}
+
 export function authHeaders(extra = {}) {
   const token = globalThis.__INDEXUS_BEARER__ || globalThis.process?.env?.INDEXUS_BEARER;
   return token ? { ...extra, Authorization: `Bearer ${token}` } : { ...extra };

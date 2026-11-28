@@ -1,4 +1,4 @@
-import { peerUrl, requestPeer } from "./transport.js";
+import { requestLocalPeer } from "./transport.js";
 import { MAX_CONTENT_RECORDS } from "./wire.js";
 
 // This bounded RPC addresses exactly one peer and one location. A conflict,
@@ -10,11 +10,7 @@ export async function getDirectRecords(protocol, peer, collection, location, lim
   if (typeof includePayloads !== "boolean") throw new TypeError("Expected a boolean includePayloads flag");
   const params = { collection, location, limit: String(limit) };
   if (includePayloads) params.payloads = "true";
-  const url = peerUrl(protocol, peer.ip(), peer.port(), "/records/direct", options.gateway);
-  const { status, data } = await requestPeer(url, options, {
-    params,
-    redirect: "error",
-  });
+  const { status, data } = await requestLocalPeer(protocol, peer, "/records/direct", params, options);
   if (status !== 200 || (includePayloads && data?.payloads !== true) || !Array.isArray(data?.records) || data.records.length > limit)
     throw new Error("Invalid direct record response");
   const ids = new Set();
