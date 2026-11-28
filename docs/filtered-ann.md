@@ -1,11 +1,11 @@
 # Search eligible vectors by centroid
 
-Build an in-memory inverted file (IVF) from one immutable set of rows and
+Build an in-memory inverted file (IVF) from a set of rows and
 representative centroids of the same width. Each row needs a unique document
 key (ID and optional location) and a finite dense vector. The SDK assigns a
 row to the nearest centroid by squared Euclidean distance. A tie selects the
 first centroid in input order. The SDK copies the centroid coordinates and
-retains references to the input rows. Rebuild when the data changes.
+retains references to the input rows. Keep those rows and vectors immutable.
 
 ```js
 import { buildIvfIndex } from "js-indexus-sdk";
@@ -42,6 +42,20 @@ hits as applying the predicate during search. It reduces the rows assigned
 during construction and the rows visited during each query. The resulting
 index covers only that selection. For a single query, `exactKnn(eligible,
 query, {limit: 10})` can avoid the construction cost entirely.
+
+## Append new documents
+
+```js
+index.add(newRows);
+const updated = index.search(query, { probes: 4 });
+```
+
+Each added row is assigned to one existing list. The batch becomes visible
+to subsequent searches after all its rows have been validated. A search that
+already started keeps its original list lengths. Use fresh document keys
+for each batch, including within the batch. The SDK treats each row as an
+insertion. For replacements, deletions or new centroids, build an index from
+the updated selection and switch to it once it is ready.
 
 ## Reproduce the local SIFT sessions
 

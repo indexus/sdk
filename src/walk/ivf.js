@@ -1,7 +1,6 @@
 import { exactKnn, squaredDistance, vectorLike } from "./exactKnn.js";
 
-// Each caller-provided centroid defines a list. Rows and their vectors must
-// describe one immutable view for the lifetime of this index.
+// Each caller-provided centroid defines a list. Keep inserted rows and vectors immutable.
 export function buildIvfIndex(rows, centroids) {
   if (!Array.isArray(centroids) || !centroids.length) throw new TypeError("Expected nonempty centroids");
   const width = centroids[0]?.length;
@@ -16,7 +15,7 @@ export function buildIvfIndex(rows, centroids) {
     return { center: Float64Array.from(vector), rows: [] };
   });
 
-  for (const row of rows) {
+  function listFor(row) {
     if (typeof row.id !== "string" || !row.id ||
         (row.location !== undefined && (typeof row.location !== "string" || !row.location)))
       throw new TypeError("Invalid IVF document key");
@@ -29,7 +28,16 @@ export function buildIvfIndex(rows, centroids) {
         best = dist;
       }
     }
-    lists[nearest].rows.push(row);
+    return nearest;
+  }
+
+  for (const row of rows) lists[listFor(row)].rows.push(row);
+
+  // New keys only. A failed batch leaves all lists as they were before publication.
+  function add(batch) {
+    const pending = [];
+    for (const row of batch) pending.push({ row, list: listFor(row) });
+    for (const { row, list } of pending) lists[list].rows.push(row);
   }
 
   function search(query, { probes = 1, limit = 10, filter = () => true } = {}) {
@@ -39,10 +47,13 @@ export function buildIvfIndex(rows, centroids) {
     if (typeof filter !== "function") throw new TypeError("Expected a filter predicate");
     const ordered = lists.map(({ center }, i) => ({ i, distance: squaredDistance(query, center, "query") }));
     ordered.sort((a, b) => a.distance - b.distance || a.i - b.i);
+    const ends = ordered.slice(0, probes).map(({ i }) => lists[i].rows.length);
     let visitedRows = 0, candidateDistances = 0;
     function* candidates() {
       for (let p = 0; p < probes; p++) {
-        for (const row of lists[ordered[p].i].rows) {
+        const rows = lists[ordered[p].i].rows;
+        for (let j = 0; j < ends[p]; j++) {
+          const row = rows[j];
           visitedRows++;
           const eligible = filter(row);
           if (typeof eligible !== "boolean") throw new TypeError("Expected a boolean filter result");
@@ -56,5 +67,5 @@ export function buildIvfIndex(rows, centroids) {
     const hits = exactKnn(candidates(), query, {limit});
     return { hits, centroidDistances: lists.length, candidateDistances, visitedRows };
   }
-  return { search };
+  return { add, search };
 }

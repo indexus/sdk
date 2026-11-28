@@ -29,3 +29,33 @@ test("ties and malformed or sparse inputs",()=>{
   assert.throws(()=>buildIvfIndex([{id:"x",vector:["0"]}],[[0]]));
   assert.throws(()=>buildIvfIndex([],[]));
 });
+
+test("incremental batches match a rebuild and failed batches stay invisible", () => {
+  const rows = [{ id: "a", vector: [0] }, { id: "z", vector: [10] }];
+  const batch = [{ id: "b", vector: [7] }, { id: "c", vector: [1] }];
+  const centers = [[0], [10]];
+  const index = buildIvfIndex(rows, centers);
+  assert.throws(() => index.add([...batch, { id: "bad", vector: [NaN] }]));
+  assert.deepEqual(index.search([5], { probes: 2 }), buildIvfIndex(rows, centers).search([5], { probes: 2 }));
+
+  index.add(batch.values());
+  const rebuilt = buildIvfIndex([...rows, ...batch], centers);
+  for (const query of [[0], [4], [10]]) {
+    for (const probes of [1, 2]) {
+      assert.deepEqual(index.search(query, { probes }), rebuilt.search(query, { probes }));
+    }
+  }
+});
+
+test("a filter that adds rows cannot extend the search already in progress", () => {
+  const index = buildIvfIndex([{ id: "a", vector: [0] }], [[0], [10]]);
+  const result = index.search([0], {
+    probes: 2,
+    filter: () => {
+      index.add([{ id: "b", vector: [10] }]);
+      return true;
+    },
+  });
+  assert.deepEqual(result.hits.map(hit => hit.id), ["a"]);
+  assert.deepEqual(index.search([0], { probes: 2 }).hits.map(hit => hit.id), ["a", "b"]);
+});
