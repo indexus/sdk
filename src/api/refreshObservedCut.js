@@ -80,24 +80,18 @@ export async function refreshObservedCut(
     loads = new Map(),
     changedAncestors = [],
     unknownAncestors = [];
-  let requests = 0,
-    failed = false;
+  let requests = 0;
   function charge() {
     checkRead(options.signal);
-    if (failed || requests >= maxRequests) throw new RangeError("Refresh request budget exhausted");
+    if (requests >= maxRequests) throw new RangeError("Refresh request budget exhausted");
     requests++;
   }
   const probe = (node) => {
     charge();
     return this.getLocalFingerprint(protocol, peer, collection, node.location, options);
   };
-  const pool = (nodes, work) =>
-    asyncPool(concurrency, nodes, work, {
-      signal: options.signal,
-      onError: () => {
-        failed = true;
-      }
-    });
+  // Each worker issues one call. asyncPool stops dispatch and drains on failure.
+  const pool = (nodes, work) => asyncPool(concurrency, nodes, work, { signal: options.signal });
   function markUnchanged(node) {
     if (node.leaf) states.set(node.location, "unchanged");
     else for (const child of node.children.values()) markUnchanged(child);
