@@ -79,3 +79,31 @@ another field: [compose.md](compose.md).
 `node scripts/perf/run.mjs --out out.json` and
 `node scripts/perf/compare.mjs perf/baseline/node.json out.json`:
 [perf.md](perf.md).
+
+### Read a zone already held in a peer's cache
+
+`await network.getCachedZone(collection, prefix, { maxAgeMs: 5000 })` probes
+one peer and returns `{ set, observedAt }` or `null` if its local cache lacks
+a recent entry. The timestamp describes when that peer obtained the result.
+A cached zone can lag writes. A cold miss leaves the work of populating a
+zone to the application. Errors, including an older peer's HTTP 404, propagate
+to the caller. This call requires a peer or gateway serving `/set/cached`.
+
+To read live record IDs and their numeric columns at one exact location on a
+peer selected by the client, use the bounded direct read:
+
+```js
+const rows = await api.getDirectRecords("http", peer, collection, location, 1000);
+```
+
+An empty array covers only that address. Children can still hold records.
+HTTP 409 reports a peer without write authority for the address; 503 reports
+unavailable authority and 413 an exceeded budget. Errors leave the client's
+pending location unresolved. The API issues one request without following a
+redirect. Different calls may observe different revisions.
+
+To read the documents for local text or attribute queries, pass
+`{ includePayloads: true }` to `api.getDirectRecords`. The addressed peer
+must confirm support for this option. A row without stored content can still
+omit `payload`. Binary content carries `binary: true` and a base64 string.
+Each successful call observes its own local storage snapshot.

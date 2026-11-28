@@ -95,3 +95,23 @@ export function peekRecords(collection, location) {
 export function getRecords(collection, location, maxItems = 1000, options = {}) {
   return this._recordReader().load(collection, location, maxItems, options);
 }
+
+// Probe one peer's retained zone. Keep this outside terminal record caches:
+// a response can be older than the latest writes and a miss is normal.
+export async function getCachedZone(collection, location, options = {}) {
+  await this.whenReady();
+  const peer =
+    this._knownOwner(zoneKey(collection, location), new Set()) ||
+    this._table.nearest(zoneKeyID(collection, location));
+  if (!peer) throw new Error("No peer for cached zone read");
+  return this._enqueueWire(
+    peer,
+    "getCachedZone",
+    () => this._api.getCachedZone(this._protocol, peer, collection, location, {
+      ...options,
+      gateway: this._gateway,
+    }),
+    { collection, location },
+    options.signal,
+  );
+}

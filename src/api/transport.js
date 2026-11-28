@@ -54,6 +54,7 @@ export async function requestPeer(url, options = {}, config = {}) {
   if (config.params) url += (url.includes("?") ? "&" : "?") + new URLSearchParams(config.params);
   const headers = authHeaders(config.headers);
   const init = { method: (config.method ?? "get").toUpperCase(), headers };
+  if (config.redirect) init.redirect = config.redirect;
   if (config.data !== undefined) {
     headers["Content-Type"] = "application/json";
     init.body = JSON.stringify(config.data);

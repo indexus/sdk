@@ -129,6 +129,13 @@ counted once and leaves as a whole.
 
 ## 4. walk
 
+The client owns each search's frontier, request budget and pagination state.
+Schedule independent branches in bounded parallel reads and reuse observed
+records and aggregates across filters, rankings and subsequent pages. Each
+peer serves a bounded read of its own data. The client can compose observations
+from different revisions under Indexus's eventual convergence contract.
+
+
 One descent of the tree with two policies: by distance (`Local`) and by
 viewport overlap and depth (`walkViewport`, `src/walk/index.js`). Output: the
 list of zones to show and the blocks that cover them. `createZoneIndex`

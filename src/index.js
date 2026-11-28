@@ -59,3 +59,25 @@ export { buildCollectionAndSpace } from "./runtime/index.js";
 
 export { ContentAssets, contentAssetLocation } from "./network/contentAssets.js";
 export { GatewaySession } from "./runtime/gatewaySession.js";
+export { numericFacet, scalarFacet } from "./walk/facets.js";
+export { groupCounts, limitPerGroup } from "./walk/groupCounts.js";
+export { numericStats } from "./walk/numericStats.js";
+
+export { fuseRankings } from "./walk/fuseRankings.js";
+
+// Presence of vocabulary values in covered IXB2 rows.
+export { presenceMasks } from "./walk/presence.js";
+export { buildBM25Index, mergeBM25Statistics } from "./walk/bm25.js";
+export { exactSparseDot } from "./walk/exactSparseDot.js";
+export { exactMaxSim } from "./walk/exactMaxSim.js";
+export { buildIvfIndex } from "./walk/ivf.js";
+export { exactKnn } from "./walk/exactKnn.js";
+export { topByAttribute, topByAttributes } from "./walk/topByAttribute.js";
+export { documentFilter } from "./walk/documentFilter.js";
+export { selectDirectRecords } from "./walk/selectDirectRecords.js";
+
+export { walkLocalChildren } from "./walk/walkLocalChildren.js";
+export { numericHistogram, mergeNumericHistograms, histogramQuantile } from "./walk/numericHistogram.js";
+
+export { DocumentUniverse } from "./walk/documentUniverse.js";
+export { mergeSubtreeFingerprints } from "./walk/subtreeFingerprint.js";

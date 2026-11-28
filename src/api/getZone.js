@@ -10,3 +10,29 @@ export async function getZone(protocol, peer, collection, location, options = {}
   }
   return response.data.set;
 }
+
+// A peer-local observation. A missing entry never starts a terminal read.
+export async function getCachedZone(protocol, peer, collection, location, options = {}) {
+  const { maxAgeMs } = options;
+  if (!Number.isSafeInteger(maxAgeMs) || maxAgeMs <= 0)
+    throw new RangeError("maxAgeMs must be a positive integer");
+
+  const url = peerUrl(protocol, peer.ip(), peer.port(), "/set/cached", options.gateway);
+  const response = await requestPeer(url, options, {
+    params: { collection, location, max_age: `${maxAgeMs}ms` },
+    redirect: "error",
+    timeout: 10000,
+  });
+  if (response.status === 204) return null;
+  const { set, source, observed_at: observedAt } = response.data ?? {};
+  if (
+    response.status !== 200 ||
+    source !== "cache" ||
+    !set ||
+    typeof set !== "object" ||
+    Array.isArray(set) ||
+    typeof observedAt !== "string" ||
+    !Number.isFinite(Date.parse(observedAt))
+  ) throw new Error("Invalid cached zone response");
+  return { set, observedAt };
+}

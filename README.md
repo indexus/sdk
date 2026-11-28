@@ -64,6 +64,172 @@ read](docs/getting-started.md) to retrieve sales from a running Anglet node.
 [Docker setup](https://github.com/indexus/core/tree/main/quickstart) starts
 the data service used by that example.
 
+## Order selected records by an attribute
+
+```js
+import { topByAttribute } from "js-indexus-sdk";
+
+const rows = [{ id: "a", height: 4 }, { id: "b", height: 8 }, { id: "c" }];
+const tallest = topByAttribute(rows, row => row.height, { order: "desc", limit: 2 });
+// tallest contains the original rows b and a.
+```
+
+For lexicographic ordering select the fields in priority order. A missing
+value sorts last for its criterion. IDs and locations break remaining ties.
+
+```js
+import { topByAttributes } from "js-indexus-sdk";
+
+const top = topByAttributes(rows, [
+  { select: row => row.category },
+  { select: row => row.height, order: "desc" },
+], { limit: 10 });
+```
+
+
+Pass an iterable of eligible records. The selector runs once per row and
+returns a finite number, string or boolean of one type. Null and missing
+values sort last in both directions. Equal values sort by ascending ID and
+optional location using Unicode code-point order. Identical keys keep input
+order. Each call retains at most twice the requested number of candidates.
+A full native array sort is sufficient when the whole ordered list is needed.
+
+## Discover children observed by one peer
+
+`await api.getLocalChildren("http", peer, collection, location, options)`
+requests the direct child addresses known to the selected peer. Use `@` for
+the root. The result carries `{ children, complete: false }`, including when
+the list is empty. Other peers can hold additional descendants. A failed
+request propagates to the caller.
+
+## Search client documents by field
+
+Build a reusable BM25 index over string fields of documents with unique IDs.
+Field weights multiply their scores. By default, `lowercase-whitespace-v1`
+lowercases and splits on whitespace. To match accented and hyphenated Latin
+text with unaccented search terms, choose an analyzer when building the index:
+
+```js
+const index = buildBM25Index(documents, { title: 2, body: 1 }, {
+  fieldAnalyzers: { title: "latin-folded-words-v1" },
+});
+```
+
+The title analyzer lowercases, strips combining marks attached to Latin letters,
+and tokenizes runs of Unicode letters, marks and numbers. For example,
+`CAFÉ-Crème` yields `cafe` and `creme`; marks on other scripts are retained.
+The body keeps its whitespace analyzer, so searching for `cafe` also finds
+`CAFÉ-Crème` in titles and matches whole unaccented tokens in bodies. Set
+`analyzer` to change the default across fields. Each field uses its selected
+analyzer for both indexing and queries. Homogeneous indexes retain their
+original statistics format. Mixed indexes carry versioned analyzer names and
+query terms per field. Mismatched statistics raise an error.
+Each distinct query term counts once. Missing, null and empty
+fields do not contribute to that field's document count or length. Rebuild the
+index when its documents change.
+
+```js
+import { buildBM25Index, mergeBM25Statistics } from "js-indexus-sdk";
+
+const weights = { title: 2, body: 1 };
+const west = buildBM25Index([{ id: "a", title: "tower" }], weights);
+const east = buildBM25Index([{ id: "b", body: "park tower" }], weights);
+const query = "tower";
+const statistics = mergeBM25Statistics([west.statistics(query), east.statistics(query)]);
+const westHits = west.search(query, { statistics, limit: 10 });
+const eastHits = east.search(query, { statistics, limit: 10 });
+```
+
+Pass `{ k1, b }` to `search` to tune the score. The default values are
+`k1 = 1.2` and `b = 0.75`. A finite nonnegative `k1` controls term-frequency
+saturation. Zero gives each matching term its field-weighted IDF. The length
+normalization parameter `b` ranges from 0 (disabled) to 1 (full). Reuse the
+same corpus statistics when changing these options, and pass the same scoring
+parameters to every partition for each search.
+
+For one index, `index.search(query)` uses its local statistics. For partitions,
+use the same field weights, disjoint documents and one collection snapshot.
+The JSON-serializable statistics contain corpus counts, total field lengths and
+document frequencies for the query terms. With shared statistics, merge each
+partition's top-k by descending score then ascending Unicode document ID to
+obtain the global top-k, ready for rank fusion.
+
+### Verify an exact phrase in one field
+
+`index.filterPhrase(documents, "title", "café crème")` yields each matching
+input document once, in input order. The field's configured analyzer processes
+both the phrase and the field text. All tokens must be consecutive and in the
+same order, including repeated tokens. An empty analyzed phrase yields no
+matches. Verify the full eligible iterable before applying a top-k limit when
+all phrase matches matter. Keep the source text available on the candidates.
+
+Verification scans the supplied field text once at query time. It retains the
+query tokens, a prefix table and the current field's tokens. Building the
+BM25 index stores no additional positions.
+
+### Match a token prefix in one field
+
+`index.filterTokenPrefix(documents, "title", "caf")` yields matching
+candidates in input order. At least one analyzed token in the named field
+must start with the entire analyzed prefix. A full token also matches. An
+empty analyzed prefix yields no results. A prefix that analyzes into several
+tokens raises an error during iteration. With the folded analyzer, `cre` finds
+`CAFÉ-Crème`. With the whitespace analyzer, this field contains one token
+beginning with `café-`. As with phrase verification, pass candidates with
+their field text and apply limits after filtering.
+
+## Find nearest vectors among selected records
+
+Pass the query vector and any iterable of eligible, live candidates from one
+view. Each candidate supplies an ID, an optional location, and a dense vector
+as a number array or numeric typed array. The caller selects the eligible
+rows and supplies each document key once.
+
+```js
+import { exactKnn } from "js-indexus-sdk";
+
+function* selected(records) {
+  for (const r of records) if (r.category === 7) yield r;
+}
+const nearest = exactKnn(selected([
+  { id: "a", category: 7, vector: [3, 4] },
+  { id: "b", category: 8, vector: [0, 0] },
+]), [0, 0], { limit: 10 }); // [{ id: "a", distance_squared: 25 }]
+```
+
+The query returns up to the requested limit in ascending squared Euclidean
+distance, then ID and location order. It consumes the iterable once, computes
+every eligible distance, and holds at most twice the requested limit in
+candidate hits. Short, empty and exhausted iterables yield all available
+matches. Set `metric: "cosine"` for ascending cosine distance (1 minus cosine
+similarity). Each hit then carries `cosine_distance` in [0, 2]. This option
+requires nonzero query and candidate vectors. It reuses two width-sized
+buffers during the scan. The default `metric: "l2_squared"` retains
+`distance_squared` and accepts zero vectors. Non-finite coordinates and inconsistent vector widths raise errors.
+
+## Fuse document rankings
+
+Combine independently ordered BM25 and vector hits for the same collection,
+snapshot and eligible documents. Supply a stable unique document ID per hit. When IDs repeat across locations,
+pass `identity: "location-id"` and include a location on each active hit.
+The result then carries both fields, with ID and location breaking score ties.
+
+```js
+import { fuseRankings } from "js-indexus-sdk";
+
+const view = { collection: "docs", snapshot: "backup-digest" };
+const hits = fuseRankings([
+  { ...view, weight: 2, hits: [{ id: "a" }, { id: "c" }] },
+  { ...view, hits: [{ id: "b" }, { id: "c" }, { id: "a" }] },
+], { limit: 3 }); // IDs: a, c, b
+```
+
+Each unique document contributes `weight / (constant + rank)` once per list.
+Ranks start at one after deduplication. The default weight is 1 and the
+default constant is 60. Score ties use document ID order. Ensure each source
+reads the snapshot it declares and merges its partitions before fusion.
+Input list depth determines which candidates can appear.
+
 ## Repository map
 
 | Path | Role |

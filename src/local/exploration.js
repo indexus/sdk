@@ -35,10 +35,18 @@ export function prepare() {
   let count = 0;
   let items = 0;
 
-  for (const element of layer.indexed.list) {
+  let budget = this.options.cap * this.limit;
+  if (this.level > 0 && layer.final && layer.indexed.onlyTerminal && this.level + 1 === this.sets.length) {
+    // This sorted frontier contains only results. Select just enough to
+    // deliver the next page and satisfy the existing radius/waiting rules.
+    const needed = Math.max(this.options.step, this.limit + layer.waiting - layer.loaded.count);
+    budget = Math.min(budget, needed - layer.selected.count);
+  }
+  for (let i = 0; i < layer.indexed.length; i++) {
+    const element = layer.indexed.at(i);
     if (
       this.level > 0 &&
-      (element.distance() > this.previous().radius || count >= this.options.cap * this.limit)
+      (element.distance() > this.previous().radius || count >= budget)
     ) {
       break;
     }
@@ -60,10 +68,10 @@ export function prepare() {
     return true;
   }
 
-  if (layer.indexed.count === 0 || layer.indexed.list[0].distance() > this.previous().radius) {
+  if (layer.indexed.count === 0 || layer.indexed.at(0).distance() > this.previous().radius) {
     layer.radius = this.previous().radius;
   } else {
-    layer.radius = layer.indexed.list[0].distance();
+    layer.radius = layer.indexed.at(0).distance();
   }
 
   this.previous().waiting = layer.indexed.count + layer.waiting;
@@ -109,7 +117,7 @@ export async function query() {
     await asyncPool(this.network.getConcurrency(), selectedList, process);
   }
 
-  this.current().loaded.concat(this.current().selected.list);
+  this.current().loaded.concat(selectedList);
   this.current().selected.clear();
 }
 
@@ -186,7 +194,7 @@ export function stream() {
   const result = [];
 
   for (let idx = 0; idx < length; idx++) {
-    const element = this.current().selected.list[idx];
+    const element = this.current().selected.at(idx);
     result.push(element); // Assuming element is an Item
     this.current().loaded.add(element);
     this.monitoring.send(new Monitoring(this.level, State.Streamed, element));
