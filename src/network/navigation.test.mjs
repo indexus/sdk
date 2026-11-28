@@ -29,6 +29,8 @@ function stubApi({ childrenByLocation = {}, redirectsByPeer = {}, deepFlags = []
         peer: peer.hash(),
         locations: [...locations],
         deep: options.deep !== false,
+        readMode: options.readMode,
+        refresh: options.refresh === true,
         envelope: options.envelope === true,
         via: options.via || "",
         routingKey: options.routingKey instanceof Uint8Array,
@@ -127,4 +129,31 @@ test("ingress and getSets share cache across alias and batch", async () => {
   await net.getSet(COLLECTION, "aa");
   await net.getSets(COLLECTION, ["aa"]);
   assert.equal(api.requests.length, 1);
+});
+
+test("refreshing a direct read bypasses the client cache without a server refresh", async () => {
+  const api = stubApi({ childrenByLocation: { aa: ["aaX"] } });
+  const net = await connected(api, { navigation: "direct" });
+  await net.getSet(COLLECTION, "aa");
+  await net.getSet(COLLECTION, "aa", { refresh: true, force: true });
+  assert.equal(api.requests.length, 2);
+  assert.ok(api.requests.every((request) =>
+    !request.deep && !request.refresh && request.readMode === "local"));
+});
+
+test("point reads follow an owner referral and remember the serving peer", async () => {
+  const api = stubApi();
+  const calls = [];
+  api.getDirectRecords = async (_protocol, peer, collection, location) => {
+    calls.push(peer.hash());
+    if (peer.hash() === NODE_A) {
+      const contact = { name: NODE_B, ip: "10.0.0.2", port: 21002 };
+      throw Object.assign(new Error("not owner"), { response: { status: 409, data: { contact } } });
+    }
+    return [{ collection, location, id: "one", metrics: [] }];
+  };
+  const net = await connected(api, { navigation: "direct" });
+  assert.equal((await net.getPointRecords(COLLECTION, "aa"))[0].id, "one");
+  assert.equal((await net.getPointRecords(COLLECTION, "aa"))[0].id, "one");
+  assert.deepEqual(calls, [NODE_A, NODE_B, NODE_B]);
 });

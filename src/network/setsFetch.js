@@ -164,7 +164,7 @@ export async function _fetchSetsIngress(
  * owner, parent-key peer fallback, bounded via. Never relies on server-side
  * inter-node deep reads.
  */
-export async function _fetchSetsDirect(collection, stillMissing, refresh = false, signal, metrics) {
+export async function _fetchSetsDirect(collection, stillMissing, _refresh, signal, metrics) {
   await this.whenReady();
   if (!this.ingressPeer()) {
     await this.discoverPeers();
@@ -227,7 +227,7 @@ export async function _fetchSetsDirect(collection, stillMissing, refresh = false
 
     await Promise.all(
       [...groups.values()].map((group) =>
-        this._directRound(collection, group, pending, refresh, signal, out),
+        this._directRound(collection, group, pending, signal, out),
       ),
     );
   }
@@ -302,11 +302,10 @@ export function _foldRedirects(redirects) {
  * @param {string} collection
  * @param {{ peer: import("../wire/peer.js").Peer, locations: string[], via: string[], metrics?: "f32" | "f64" }} group
  * @param {Map<string, { via: Set<string>, probe: string, peer: import("../wire/peer.js").Peer | null }>} pending
- * @param {boolean} refresh
  * @param {import("./setsRaw.js").RawChunk} out takes the answers that carry
  *   rows, and the zones found empty
  */
-export async function _directRound(collection, group, pending, refresh, signal, out) {
+export async function _directRound(collection, group, pending, signal, out) {
   const { peer, locations, via, metrics } = group;
   try {
     const answer = await this._enqueueWire(
@@ -321,8 +320,8 @@ export async function _directRound(collection, group, pending, refresh, signal, 
           this._wireOpts({
             signal,
             deep: false,
+            readMode: "local",
             envelope: true,
-            refresh,
             via,
             metrics,
           }),
@@ -332,7 +331,6 @@ export async function _directRound(collection, group, pending, refresh, signal, 
         location: locations[0],
         locations,
         navigation: "direct",
-        refresh,
         deep: false,
         reason: "direct-round",
       },

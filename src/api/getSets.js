@@ -30,6 +30,7 @@ function ingressFromHeaders(headers) {
  * @param {{
  *   deep?: boolean,
  *   refresh?: boolean,
+ *   readMode?: "local",
  *   envelope?: boolean,
  *   via?: string | string[],
  *   routingKey?: Uint8Array,
@@ -96,6 +97,7 @@ export async function getSets(protocol, peer, collection, locations, options = {
   )}&location=${encodeURIComponent(locationsParam)}&deep=${
     deep ? "true" : "false"
   }&refresh=${refresh ? "true" : "false"}`;
+  if (options.readMode === "local") url += "&read_mode=local";
   if (envelope) {
     url += "&envelope=1";
   }

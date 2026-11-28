@@ -287,3 +287,18 @@ distribute the SDK alongside proprietary code under the terms of the MPL.
 Earlier revisions distributed under MIT retain that grant. Third-party components
 retain their respective terms. The [DPIP specification](https://github.com/indexus/papers)
 is published separately under CC BY 4.0.
+
+
+### Peer-local reads
+
+Set `navigation: "direct"` in the last options argument to `Network` when the
+client should follow ownership hints itself. Direct `getSet` and `getSets`
+ask for local summaries with `deep=false`. A client refresh reads the latest
+available summary on that peer. A summary can lag recent writes.
+
+Use `network.getPointRecords(collection, location, limit)` for documents at
+one exact address, including at an interior node of the tree. The SDK remembers
+which peer answered and follows ownership hints if the data moves. In direct
+sessions, `getRecords` visits descendant addresses client-side. A refused or
+unavailable point read remains an error. A successful empty reply means the
+peer held the address and its snapshot contained no live records there.

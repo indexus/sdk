@@ -1,13 +1,19 @@
 // Content bytes and terminal records.
 
 import { MAX_CONTENT_RECORDS } from "../api/wire.js";
-import { zoneKey, zoneKeyID } from "../tree/alphabet.js";
+import { WIDTH, zoneKey, zoneKeyID } from "../tree/alphabet.js";
+import { checkRead } from "../utilities/sharedRead.js";
+import { transientReadFailure } from "./helpers.js";
 import { RecordReader } from "./records.js";
 
 export function _recordReader() {
   return (this._records ??= new RecordReader(async (collection, location, options = {}) => {
-    if (this._contentRecords) {
-      const rows = await this.getContentRecords(collection, location, options.maxItems, options);
+    const direct = this._readNavigation === "direct";
+    const point = location.length === WIDTH;
+    if (direct || point || this._contentRecords) {
+      const rows = direct || point
+        ? await this.getPointRecords(collection, location, options.maxItems, options)
+        : await this.getContentRecords(collection, location, options.maxItems, options);
       const set = Object.create(null);
       for (const row of rows) {
         if (
@@ -24,6 +30,13 @@ export function _recordReader() {
         const key = row.location + ":" + row.id;
         if (Object.hasOwn(set, key)) throw new Error("Duplicate terminal record");
         set[key] = { count: 1, metrics: row.metrics };
+      }
+      if (direct && !point) {
+        const groups = await this.getSet(collection, location, { ...options, refresh: true });
+        for (const group of groups) {
+          const child = group.hash();
+          if (child !== location) set[child] = { count: group.count() };
+        }
       }
       return set;
     }
@@ -86,6 +99,47 @@ export async function getContentRecords(collection, location, limit = 1000, opti
     { collection, location },
     options.signal,
   );
+}
+
+// An exact address may also contain records above maximum depth. Callers
+// exploring descendants choose those addresses separately.
+export async function getPointRecords(collection, location, limit = 1000, options = {}) {
+  await this.whenReady();
+  const key = zoneKey(collection, location);
+  const id = zoneKeyID(collection, location);
+  const tried = new Set();
+  let peer = this._knownOwner(key, tried);
+  let lastError;
+  for (let attempt = 0; attempt < this._attempts; attempt++) {
+    checkRead(options.signal);
+    peer ??= this._nearestExcluding(id, tried);
+    if (!peer) break;
+    tried.add(peer.hash());
+    try {
+      const rows = await this._enqueueWire(
+        peer,
+        "getDirectRecords",
+        () =>
+          this._api.getDirectRecords(this._protocol, peer, collection, location, limit, {
+            ...options,
+            gateway: this._gateway,
+          }),
+        { collection, location },
+        options.signal,
+      );
+      this._rememberOwner(key, peer);
+      return rows;
+    } catch (error) {
+      checkRead(options.signal);
+      const status = error?.response?.status;
+      if (status !== 409 && error?.code !== "ERR_NETWORK" && !transientReadFailure(error)) throw error;
+      lastError = error;
+      const contact = error.response?.data?.contact;
+      peer = contact ? this._foldRedirects([{ ...contact, location }]).get(location) : null;
+      if (peer && tried.has(peer.hash())) peer = null;
+    }
+  }
+  throw lastError ?? new Error("No peer for direct record read");
 }
 
 export function peekRecords(collection, location) {

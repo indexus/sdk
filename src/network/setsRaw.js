@@ -55,7 +55,7 @@ export async function _getSetsRaw(collection, locations, options = {}) {
   const metrics = normalizeMetrics(options.metrics ?? this._readMetrics);
 
   // reads of other columns are other answers: they never join one another
-  const inflightKey = metrics.includes(";") ? `${collection};${metrics}` : collection;
+  const inflightKey = `${navigation};${collection};${metrics}`;
   const joined = new Set();
   const toFetch = [];
   for (const location of wanted) {

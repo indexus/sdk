@@ -104,18 +104,24 @@ test("native browser fetch keeps its global receiver", async () => {
 });
 
 
-test("gateway sessions can resolve terminal records through the current records endpoint", async (t) => {
+test("gateway sessions walk terminal prefixes using exact reads and local summaries", async (t) => {
   t.mock.method(Network.prototype, "discoverPeers", async () => 0);
   t.mock.method(Network.prototype, "listPeers", () => [{}]);
   const reads = [];
-  t.mock.method(Network.prototype, "getContentRecords", async (collection, location, limit) => {
-    reads.push([collection, location, limit]);
-    return [{ collection, location: "abc", id: "one", metrics: [7] }];
+  const location = "abcdefghijklmnop";
+  t.mock.method(Network.prototype, "getPointRecords", async (collection, prefix, limit) => {
+    reads.push([collection, prefix, limit]);
+    return prefix === location ? [{ collection, location, id: "one", metrics: [7] }] : [];
+  });
+  t.mock.method(Network.prototype, "getSet", async (_collection, prefix) => {
+    assert.equal(prefix, "abc");
+    return [{ hash: () => location, count: () => 1 }];
   });
   const { session } = fixture({ contentRecords: true });
   const network = await session.network();
-  const records = await network.getRecords("demo", "a", 10);
-  assert.deepEqual(reads, [["demo", "a", 10]]);
+  const collection = "Demo000000000000";
+  const records = await network.getRecords(collection, "abc", 10);
+  assert.deepEqual(reads, [[collection, "abc", 10], [collection, location, 10]]);
   assert.equal(records[0].id(), "one");
   assert.equal(records[0]._terminal, true);
 });
